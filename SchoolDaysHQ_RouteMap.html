@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>School Days — Complete Route Map</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#0b111b;color:#eaf0f7;font-family:Segoe UI,Microsoft YaHei,sans-serif;overflow:hidden}#bar{position:fixed;z-index:10;top:12px;left:12px;right:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#151e2cdd;border:1px solid #314158;border-radius:10px;padding:9px;backdrop-filter:blur(8px)}button,input,select{background:#1d293a;color:#eaf0f7;border:1px solid #40516a;border-radius:6px;padding:7px 9px;font-size:14px}button{cursor:pointer}input{width:240px}#info{position:fixed;z-index:11;right:14px;top:74px;width:300px;max-height:calc(100vh - 90px);overflow:auto;background:#111a27ee;border:1px solid #33445c;border-radius:10px;padding:12px;display:none}.muted{color:#9eb0c7;font-size:12px}.title{font-weight:700;font-size:16px;margin-bottom:5px}.pill{display:inline-block;padding:2px 6px;border-radius:10px;border:1px solid #536a86;margin:2px;font-size:11px}.src{margin-top:8px;color:#91a7c1;font-size:11px}svg{width:100vw;height:100vh;display:block;cursor:grab}svg.dragging{cursor:grabbing}.stage{fill:#0f1825;stroke:#28384e;stroke-width:2}.stageLabel{fill:#9eb0c7;font-size:24px;font-weight:700}.edge{fill:none;stroke:#667891;stroke-width:2;opacity:.8}.edge.merge{stroke:#7f91aa;stroke-dasharray:7 5}.edge.path{stroke:#fff06a;stroke-width:4;opacity:1}.node rect{fill:#172436;stroke:#4d79a8;stroke-width:2;rx:9}.node text{pointer-events:none}.node .jp{fill:#f4f7fb;font-size:16px;font-weight:600}.node .en{fill:#c5d2e2;font-size:12px}.node .cn{fill:#9fb1c6;font-size:13px}.node.ending rect{fill:#2a2316;stroke:#d1a34d}.node.path rect{stroke:#fff06a;stroke-width:3}.node.selected rect{stroke:#fff06a;stroke-width:5}.node.dim{opacity:.18}.edge.dim{opacity:.08}.legend{position:fixed;left:12px;bottom:12px;background:#111a27dd;border:1px solid #314158;border-radius:8px;padding:8px;font-size:12px;color:#aebdd0}.legend span{margin-right:12px}.dot{display:inline-block;width:12px;height:12px;border:2px solid #4d79a8;border-radius:3px;vertical-align:-2px;margin-right:4px}.dot.end{border-color:#d1a34d}
+</style>
+</head>
+<body>
+<div id="bar">
+<button id="zin">＋</button><button id="zout">－</button>
+<input id="q" placeholder="搜索日文 / 英文 / 中文章节名">
+<select id="stage"><option value="all">全部 Episode</option><option>Episode 1</option><option>Episode 2</option><option>Episode 3</option><option>Episode 4</option><option>Episode 5</option><option>Final Episode</option></select>
+<button id="clear">清除高亮</button>
+</div>
+<div id="info"></div>
+<div class="legend"><span><i class="dot"></i>Episode</span><span><i class="dot end"></i>Final Episode / Ending</span><span>滚轮缩放 · 拖动平移 · 点击节点查看上下游</span></div>
+<svg id="svg" viewBox="0 0 6200 3600" aria-label="School Days complete route map">
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#667891"/></marker></defs>
+<g id="world"></g></svg>
+<script>
+const stages=['Episode 1','Episode 2','Episode 3','Episode 4','Episode 5','Final Episode'];
+const cn={
+'Confession':'告白','True Feelings':'真实的感情','The Distance Between Us':'我们之间的距离','Relationships Revealed':'关系揭露','Innocence':'纯真','First Experience':'初体验','Conflicting Desires':'矛盾的欲望','Waiting in Vain':'徒劳等待','No More Hesitation':'不再犹豫',"I'm Sorry":'对不起','Kotonoha Broken':'言叶崩坏','Setsuna':'刹那','The One I Truly Love':'我真正爱的人','Unacknowledged Feelings':'未被承认的感情','Partner for the Festival':'祭典的伙伴','The Same Feelings':'相同的感情','Substitute Girlfriend':'替代女友','Bonfire for Two':'两人的篝火','The Festival':'祭典','Premature Feelings, Discarded Feelings':'过早的感情，被舍弃的感情','The One I Love Most':'我最爱的人','With Great Reluctance':'极大的不情愿','The Video Tape':'录像带','Back to the Beginning':'回到起点','The One Hikari Loves':'光所爱的人','Transfer':'转校','The Poolside Kiss':'泳池边的吻','I Saw That Kiss':'我看见那个吻','The Secret Kiss':'秘密之吻','The Indecent Kiss':'背德之吻','Blocked Number':'被屏蔽的号码','Kotonoha Abandoned':'被抛弃的言叶',"The Charm's Effect":'护身符的效果','Getting Over It':'克服','Left Behind':'被留下的人','The Heart Wants':'内心所求','A Christmas Invitation':'圣诞邀请','Mind and Body':'身心','Anything You Want':'你想要的一切','Sekai':'世界',"Let's Just Be Friends":'我们还是朋友吧',"I'll Never Love Again":'我不会再爱','Indecision':'犹豫','The Price of Betrayal':'背叛的代价','I Love You':'很喜欢','Forever':'永远','All Hers':'她的他','Sexfriend':'Sex friend','Everyone\'s Makoto':'大家的诚','Goodbye Sekai':'再见了世界',"Setsuna's Feelings":'刹那的想法','Bavarois':'巴伐利亚风味点心','Lust':'肉欲','After the Kiss':'从接吻开始','It Begins with the first Kiss':'在初吻开始','Christmas Eve':'平安夜','Bloody End':'鲜血的结末','Two Lovers':'二人之恋人','To my Child':'我的孩子','To Kotonoha':'与言叶一起','Earnest Feelings requited':'单思的回报','Love Fulfilled':'想在一起','With Kotonoha':'在言叶身边','Pushed Too Far':'辗杀','With Honesty':'坦率的心情'};
+const jp={
+'Confession':'告白','True Feelings':'本当の気持ち','The Distance Between Us':'二人の距離','Relationships Revealed':'明かされた関係','Innocence':'無垢','First Experience':'初体験','Conflicting Desires':'葛藤する欲望','Waiting in Vain':'待ちぼうけ','No More Hesitation':'もう迷わない',"I'm Sorry":'ごめん','Kotonoha Broken':'散る言葉','Setsuna':'刹那','The One I Truly Love':'本当の恋人','Unacknowledged Feelings':'届かない思い','Partner for the Festival':'学祭の相手','The Same Feelings':'思いは同じに','Substitute Girlfriend':'代わりの恋人','Bonfire for Two':'2人だけの後夜祭','The Festival':'学祭','Premature Feelings, Discarded Feelings':'早すぎたきもち、残されたきもち','The One I Love Most':'誰よりも大好きなひと','With Great Reluctance':'しぶしぶ／しぶしぶと','The Video Tape':'ビデオテープ','Back to the Beginning':'そして振り出しに戻る','The One Hikari Loves':'光の好きな人','Transfer':'転校','The Poolside Kiss':'プールサイドのキス','I Saw That Kiss':'見られたキス','The Secret Kiss':'ないしょのキス','The Indecent Kiss':'背徳のキス','Blocked Number':'着信拒否','Kotonoha Abandoned':'棄てられた言葉',"The Charm's Effect":'おまじないの効果','Getting Over It':'乗り越える','Left Behind':'置いてきぼり','The Heart Wants':'心が望むもの','A Christmas Invitation':'クリスマスのお誘い','Mind and Body':'心と体','Anything You Want':'何でも欲しい','Sekai':'世界',"Let's Just Be Friends":'友達に戻ろう',"I'll Never Love Again":'もう誰も愛せない','Indecision':'誰も選べない','The Price of Betrayal':'裏切りの代償','I Love You':'大好き','Forever':'永遠に','All Hers':'彼女だけの彼','Sexfriend':'セックスフレンド',"Everyone's Makoto":'みんなの誠','Goodbye Sekai':'さようなら世界',"Setsuna's Feelings":'刹那の想い','Bavarois':'ババロア','Lust':'肉欲','After the Kiss':'キスのあと','It Begins with the first Kiss':'キスから先へ','Christmas Eve':'クリスマス・イブ','Bloody End':'鮮血の結末','Two Lovers':'二人の恋人','To my Child':'私の子供へ','To Kotonoha':'言葉へ','Earnest Feelings requited':'誠実な想い、かなって','Love Fulfilled':'愛が満ちる','With Kotonoha':'言葉と一緒に','Pushed Too Far':'追い詰められて','With Honesty':'正直に'};
+const e1=['Confession'];
+const e2=['True Feelings','The Distance Between Us'];
+const e3=['Relationships Revealed','Innocence','First Experience','Conflicting Desires'];
+const e4=['Waiting in Vain','No More Hesitation',"I'm Sorry",'Kotonoha Broken','Setsuna','The One I Truly Love','Unacknowledged Feelings','Partner for the Festival','The Same Feelings','Substitute Girlfriend','Bonfire for Two','The Festival','Premature Feelings, Discarded Feelings','The One I Love Most','With Great Reluctance'];
+const e5=['The Video Tape','Back to the Beginning','The One Hikari Loves','Transfer','The Poolside Kiss','I Saw That Kiss','The Secret Kiss','The Indecent Kiss','Blocked Number','Kotonoha Abandoned',"The Charm's Effect",'Getting Over It','Left Behind','The Heart Wants','A Christmas Invitation','Mind and Body','Anything You Want','Sekai',"Let's Just Be Friends","I'll Never Love Again",'The Price of Betrayal'];
+const fin=['I Love You','Forever','All Hers','Sexfriend',"Everyone's Makoto",'Goodbye Sekai',"Setsuna's Feelings",'Bavarois','Lust','After the Kiss','It Begins with the first Kiss','Christmas Eve','Bloody End','Two Lovers','To my Child','To Kotonoha','Earnest Feelings requited','Love Fulfilled','With Kotonoha','Pushed Too Far','With Honesty'];
+let nodes=[];let id=0;
+function add(stage,list){list.forEach((name,i)=>nodes.push({id:'n'+(++id),stage,name,jp:jp[name]||'',cn:cn[name]||'',bug:name==='Conflicting Desires'}));}
+add('Episode 1',e1);add('Episode 2',e2);add('Episode 3',e3);add('Episode 4',e4);add('Episode 5',e5);add('Final Episode',fin);
+nodes.find(n=>n.name==="I'll Never Love Again").display={name:"I'll Never Love Again / Indecision",jp:`${jp["I'll Never Love Again"]} / ${jp.Indecision}`,cn:`${cn["I'll Never Love Again"]} / ${cn.Indecision}`};
+const N=Object.fromEntries(nodes.map(n=>[n.name,n]));
+// Wiki-documented predecessor/follower relationships and explicit merge statements.
+const edgePairs=[]; const addE=(a,b,kind='')=>edgePairs.push([a,b,kind]);
+addE('Confession','True Feelings');addE('Confession','The Distance Between Us');
+addE('True Feelings','Relationships Revealed');addE('True Feelings','Innocence');
+addE('The Distance Between Us','First Experience');addE('The Distance Between Us','Conflicting Desires','bug');
+addE('Relationships Revealed','Waiting in Vain');addE('Relationships Revealed','No More Hesitation');addE('Relationships Revealed',"I'm Sorry");addE('Relationships Revealed','Kotonoha Broken');
+addE('Innocence','Setsuna');addE('Innocence','The One I Truly Love');
+['Waiting in Vain'].forEach(a=>addE(a,'The Video Tape'));
+['No More Hesitation',"I'm Sorry"].forEach(a=>{addE(a,'Back to the Beginning');addE(a,'The One Hikari Loves');addE(a,'Transfer');});
+['Kotonoha Broken'].forEach(a=>{addE(a,'Back to the Beginning');addE(a,'The One Hikari Loves');});
+addE('First Experience','Partner for the Festival');addE('First Experience','Unacknowledged Feelings');addE('First Experience','The Same Feelings');addE('First Experience','Substitute Girlfriend');addE('First Experience','Bonfire for Two');addE('First Experience','With Great Reluctance');
+addE('Conflicting Desires','The Festival','bug');addE('Conflicting Desires','Premature Feelings, Discarded Feelings','bug');addE('Conflicting Desires','The One I Love Most','bug');addE('Conflicting Desires','With Great Reluctance','bug');
+addE('The One I Truly Love','Blocked Number');addE('The One I Truly Love','Left Behind');addE('The One I Truly Love','Getting Over It');
+addE('Setsuna','The Secret Kiss');addE('Setsuna','I Saw That Kiss');addE('Setsuna','The Poolside Kiss');
+['Unacknowledged Feelings','Partner for the Festival','The Same Feelings'].forEach(a=>{addE(a,"The Charm's Effect");addE(a,'The Indecent Kiss');addE(a,'Left Behind');addE(a,'The Heart Wants');});
+['Bonfire for Two','The Festival'].forEach(a=>{addE(a,'Mind and Body');addE(a,"Let's Just Be Friends");addE(a,'Anything You Want');addE(a,'Kotonoha Abandoned');});
+addE('With Great Reluctance','A Christmas Invitation');addE('With Great Reluctance','The Price of Betrayal');
+['Substitute Girlfriend','Premature Feelings, Discarded Feelings','The One I Love Most'].forEach(a=>{addE(a,"I'll Never Love Again");addE(a,'Sekai');});
+// Episode 5 merges / endpoint relations explicitly documented by the Wiki.
+addE('The Secret Kiss','Bavarois');addE('The Secret Kiss','Lust');addE('I Saw That Kiss','Bavarois');addE('I Saw That Kiss','Lust');addE('The Poolside Kiss','Bavarois');addE('The Poolside Kiss','Lust');addE('The Indecent Kiss','Bavarois');addE('The Indecent Kiss','Lust');
+addE("The Charm's Effect",'It Begins with the first Kiss');addE("The Charm's Effect",'Bloody End');
+addE('Blocked Number','After the Kiss');addE('Blocked Number','Bloody End');
+addE('Kotonoha Abandoned','After the Kiss');addE('Kotonoha Abandoned','It Begins with the first Kiss');addE('Kotonoha Abandoned','Bloody End');
+['Getting Over It','Left Behind','The Heart Wants'].forEach(a=>{addE(a,'Christmas Eve');addE(a,'With Honesty');});
+addE('A Christmas Invitation','Christmas Eve');addE('A Christmas Invitation','With Honesty');
+addE('Mind and Body','Bavarois');addE('Mind and Body','Lust');addE("Let's Just Be Friends",'Bavarois');addE("Let's Just Be Friends",'Lust');
+addE('Anything You Want','Two Lovers');addE('Anything You Want','To my Child');
+addE('Back to the Beginning','All Hers');addE('Back to the Beginning','Bloody End');
+addE('The One Hikari Loves',"Everyone's Makoto");addE('The One Hikari Loves','Sexfriend');
+addE('Transfer','Goodbye Sekai');addE('Transfer',"Setsuna's Feelings");
+addE("I'll Never Love Again",'With Kotonoha');addE("I'll Never Love Again",'Love Fulfilled');addE("I'll Never Love Again",'Earnest Feelings requited');
+addE('Sekai','To Kotonoha');addE('Sekai','Bloody End');
+addE('The Video Tape','I Love You');addE('The Video Tape','Forever');
+addE('The Price of Betrayal','Bloody End');addE('The Price of Betrayal','Christmas Eve');addE('The Price of Betrayal','With Honesty');addE('The Price of Betrayal','Pushed Too Far');addE('The Price of Betrayal','To my Child');
+// layout
+const stageX={'Episode 1':80,'Episode 2':850,'Episode 3':1600,'Episode 4':2400,'Episode 5':3450,'Final Episode':4950};
+const cols={}; stages.forEach(s=>cols[s]=nodes.filter(n=>n.stage===s));
+for(const s of stages){const arr=cols[s]; const gap=2380/(arr.length+1); arr.forEach((n,i)=>{n.x=stageX[s];n.y=150+i*gap;n.w=280;n.h=104;});}
+const svg=document.getElementById('svg'), world=document.getElementById('world');
+const label=(n,key)=>n.display?.[key]||n[key];
+function el(t,a={}){const x=document.createElementNS('http://www.w3.org/2000/svg',t);for(const[k,v]of Object.entries(a))x.setAttribute(k,v);return x}
+function render(){world.innerHTML='';
+ stages.forEach((s,si)=>{const r=el('rect',{x:stageX[s]-40,y:55,width:si===5?500:400,height:2500,class:'stage',rx:12});world.appendChild(r);const t=el('text',{x:stageX[s],y:95,class:'stageLabel'});t.textContent=s;world.appendChild(t);});
+ const edgeLayer=el('g'); world.appendChild(edgeLayer); const nodeLayer=el('g');world.appendChild(nodeLayer);
+ edgePairs.forEach(([a,b,kind])=>{if(!N[a]||!N[b])return;const A=N[a],B=N[b];const x1=A.x+A.w,y1=A.y+A.h/2,x2=B.x,y2=B.y+B.h/2;const dx=Math.max(80,(x2-x1)*.42);const p=el('path',{d:`M${x1} ${y1} C${x1+dx} ${y1}, ${x2-dx} ${y2}, ${x2} ${y2}`,class:'edge '+(kind||''),['marker-end']:'url(#arrow)'});p.dataset.a=A.name;p.dataset.b=B.name;edgeLayer.appendChild(p);});
+ nodes.forEach(n=>{const g=el('g',{class:'node '+(n.bug?'bug':'')});g.dataset.name=n.name;g.dataset.stage=n.stage;const r=el('rect',{x:n.x,y:n.y,width:n.w,height:n.h});g.appendChild(r);const tj=el('text',{x:n.x+12,y:n.y+30,class:'jp'});tj.textContent=label(n,'jp');g.appendChild(tj);const te=el('text',{x:n.x+12,y:n.y+57,class:'en'});te.textContent=label(n,'name');g.appendChild(te);const tc=el('text',{x:n.x+12,y:n.y+84,class:'cn'});tc.textContent=label(n,'cn');g.appendChild(tc);g.addEventListener('pointerdown',e=>e.stopPropagation());nodeLayer.appendChild(g);});
+}
+function select(n){document.querySelectorAll('.node').forEach(x=>x.classList.remove('selected','path','dim'));document.querySelectorAll('.edge').forEach(x=>x.classList.remove('path','dim'));const g=document.querySelector(`.node[data-name="${CSS.escape(n.name)}"]`);g.classList.add('selected');const up=edgePairs.filter(e=>e[1]===n.name).map(e=>e[0]);const down=edgePairs.filter(e=>e[0]===n.name).map(e=>e[1]);const walk=forward=>{const nodes=new Set([n.name]),edges=new Set(),queue=[n.name];while(queue.length){const name=queue.shift();edgePairs.forEach(([a,b])=>{const match=forward?a===name:b===name;if(!match)return;const next=forward?b:a;edges.add(`${a}\u0000${b}`);if(!nodes.has(next)){nodes.add(next);queue.push(next);}});}return{nodes,edges}};const before=walk(false),after=walk(true),pathNodes=new Set([...before.nodes,...after.nodes]),pathEdges=new Set([...before.edges,...after.edges]);document.querySelectorAll('.node').forEach(x=>{const active=pathNodes.has(x.dataset.name);x.classList.toggle('path',active);x.classList.toggle('dim',!active);});document.querySelectorAll('.edge').forEach(x=>{const active=pathEdges.has(`${x.dataset.a}\u0000${x.dataset.b}`);x.classList.toggle('path',active);x.classList.toggle('dim',!active);});const box=document.getElementById('info');box.style.display='block';box.innerHTML=`<div class="title">${label(n,'jp')}</div><div>${label(n,'name')}</div><div>${label(n,'cn')}</div><div class="pill">${n.stage}</div><hr><div class="muted">前置节点</div><div>${up.length?up.map(x=>`<span class="pill">${x}</span>`).join(''):'—'}</div><div class="muted" style="margin-top:8px">后续节点</div><div>${down.length?down.map(x=>`<span class="pill">${x}</span>`).join(''):'—'}</div>`}
+function filter(){const q=document.getElementById('q').value.trim().toLowerCase(),s=document.getElementById('stage').value;document.querySelectorAll('.node').forEach(g=>{const n=N[g.dataset.name];const ok=(!q||(label(n,'name')+' '+label(n,'jp')+' '+label(n,'cn')).toLowerCase().includes(q))&&(s==='all'||n.stage===s);g.classList.toggle('dim',!ok);});}
+document.getElementById('q').addEventListener('input',filter);document.getElementById('stage').addEventListener('change',filter);document.getElementById('clear').onclick=()=>{document.querySelectorAll('.node,.edge').forEach(x=>x.classList.remove('dim','path','selected'));document.getElementById('info').style.display='none';document.getElementById('q').value='';document.getElementById('stage').value='all'};
+let vb={x:0,y:0,w:6200,h:3600},drag=false,sx=0,sy=0,start={};
+function setVB(){svg.setAttribute('viewBox',`${vb.x} ${vb.y} ${vb.w} ${vb.h}`)}
+svg.addEventListener('click',e=>{let target=e.target;while(target&&target!==svg&&!target.classList?.contains('node'))target=target.parentNode;if(target?.classList?.contains('node'))select(N[target.dataset.name]);});
+svg.addEventListener('wheel',e=>{e.preventDefault();const f=e.deltaY<0?.88:1.14;vb.w*=f;vb.h*=f;setVB()},{passive:false});
+svg.addEventListener('pointerdown',e=>{drag=true;sx=e.clientX;sy=e.clientY;start={...vb};svg.classList.add('dragging');svg.setPointerCapture(e.pointerId)});
+svg.addEventListener('pointermove',e=>{if(!drag)return;vb.x=start.x-(e.clientX-sx)*vb.w/svg.clientWidth;vb.y=start.y-(e.clientY-sy)*vb.h/svg.clientHeight;setVB()});
+svg.addEventListener('pointerup',()=>{drag=false;svg.classList.remove('dragging')});
+function zoom(f){vb.w*=f;vb.h*=f;setVB()}document.getElementById('zin').onclick=()=>zoom(.8);document.getElementById('zout').onclick=()=>zoom(1.25);
+render();
+</script>
+</body></html>
